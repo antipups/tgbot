@@ -173,4 +173,5 @@ def test(message):
             checkfilm(message)
 
 
+print("I'm Work!")
 bot.infinity_polling(True)
