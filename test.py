@@ -127,9 +127,8 @@ def dotanews(url1):
         namefile = 'Нажми.torrent'
         request.urlretrieve('https://kinoframe.net' + url1.data, namefile)
         with open(namefile, 'rb') as f:
-            os.startfile(namefile)
-            time.sleep(60)
-        # os.remove(namefile)
+            bot.send_document(url1.from_user.id, f)
+        os.remove(namefile)
     # elif url1.data.find('/news/') != -1:    # дота новости
     #     result = show.dotanews(url1.data)
     #     bot.send_message(url1.from_user.id, result)
