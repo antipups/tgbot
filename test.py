@@ -93,6 +93,7 @@ def checkfilm(message):
 def mainfilm(message):
     markup = types.InlineKeyboardMarkup()
     _text = message.text
+    print(_text)
     dict_ = show.downloadfilm(_text)
     if len(dict_) < 1:
         bot.send_message(message.from_user.id, 'Введенного фильма не было найдено на сайте,\n'
