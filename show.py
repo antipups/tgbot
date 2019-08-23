@@ -140,100 +140,71 @@ def checkgaz():
     return result
 
 
-def dotaupdates():
-    site = requests.get('https://dota2.ru/news/?category=updates').text
-    nexturl = 'https://dota2.ru/'  # к этому url добавим что-то и переход
-    dictlsofnews = {}
-    # print(site.text)  # проверка на работу парсинга в общем
-    i = 0
-    while i < 10:
-        cursor = site.find('<article class="item">') + 22   # курсор - переменная бегалка для работы с строками
-        site = site[cursor:]
-        cursor = site.find('"') + 1
-        site = site[cursor:]
-        cursor = site.find('"')
-        _strwithurl = site[:cursor]
-        cursor = site.find('<h3 class="title">') + 18
-        site = site[cursor:]
-        cursor = site.find('<')
-        _strwithtitle = site[:cursor]
-        _dict = {_strwithtitle: _strwithurl}
-        dictlsofnews.update(_dict)
-        i += 1
-    return dictlsofnews
-
-def dotanews(needurl):
-    addurl = 'https://dota2.ru'
-    site = requests.get('https://dota2.ru/news/?category=updates').text
-    i = 0
-    while i < 10:
-        cursor = site.find('<article class="item">') + 22  # курсор - переменная бегалка для работы с строками
-        site = site[cursor:]
-        cursor = site.find('"') + 1
-        site = site[cursor:]
-        cursor = site.find('"')
-        str_ = site[:cursor]
-        if str_.find(needurl) != -1:
-            newurl = addurl + str_
-            site = requests.get(newurl).text
-            cursor = site.find('<p style="text-align:justify;"><strong>') + 39
-            site = site[cursor:]
-            cursor = site.find('</div>')
-            site = site[:cursor]
-            while True:     # цикл для вырезки всего текста и его же выравнивания
-                if site.find("<") != -1:
-                    start = site.find("<")
-                    end = site.find(">") + 1
-                    if site[start + 1] == 'p':
-                        site = site[:start] + '\n' + site[end:]
-                    elif site[start + 1] == 'l':
-                        site = site[:start] + '\n - ' + site[end:]
-                    elif site[start + 1] == 'h':
-                        site = site[:start] + '\n--------------------\n' + site[end:]
-                    else:
-                        site = site[:start] + site[end:]
-                else:
-                    break
-            # print(site)  # не обрезанный, в плане внутри
-            break  # окончание правки текста и вывод окончательной новости
-    i += 1
-    return site
-
-
-def downloadfilm(title):
+def kino(title):
     preurl = 'https://kinoframe.net/search/' + title + '/'
     s = requests.Session()
     r = s.get(preurl).text
-    dict_ = {}  # ссылки + названия фильмов
-    t = r.find('<b>Название:</b>') + 16
-    while t != 15:
+    dict_of_films_unsorted = {}  # ссылки + названия фильмов
+    while True:
+        t = r.find('<div class="thumbnail">')
+        if t == -1:
+            break
         r = r[t:]
-        t = r.find('"') + 1
+        t = r.find('title="Фильм ') + 13
+        title = r[t: r.find(' скачать')]
+        t = r.find('<a href="') + 9
         r = r[t:]
-        t = r.find('"')
-        urlfilm = r[:t]
-        t = r.find('>') + 1
+        url = 'https://kinoframe.net' + r[:r.find('"')]
         r = r[t:]
-        t = r.find('<')
-        namefilm = r[:t]
-        dict_.update({urlfilm: namefilm})
-        t = r.find('<b>Название:</b>') + 16
-    dictdown = {}
-    for i in dict_.items():
-        if i[1] == title:
-            preurl = 'https://kinoframe.net' + i[0]
-            r = s.get(preurl).text
-            t = r.find('<tr><td><a onclick="return') + 26
-            while t != 25:
-                r = r[t:]
-                t = r.find('href="') + 6
-                r = r[t:]
-                t = r.find('"')
-                urldown = r[:t]
-                t = r.find('>') + 1
-                r = r[t:]
-                t = r.find('<')
-                namedown = r[:t]
-                dictdown.update({urldown: namedown})
-                t = r.find('<tr><td><a onclick="return') + 26
-    return dictdown
+        dict_of_films_unsorted.update({title: url})
+    dict_of_films = {}
+    for i in sorted(dict_of_films_unsorted):
+        dict_of_films.update({i: dict_of_films_unsorted[i]})
+    return dict_of_films
+
+
+def choice_quality(url_of_film):
+    s = requests.Session()
+    r = s.get(url_of_film).text
+    dict_of_quality = {}
+    while True:
+        t = r.find('<tr><td>')
+        if t == -1:
+            break
+        r = r[t:]
+        t = r.find('href="') + 6
+        url = 'https://kinoframe.net' + r[t: r.find('title') - 2]
+        t = r.find('title="Скачать торрент" style="font-weight: bold;">') + 51
+        quality = r[t: r.find('</a>')]
+        r = r[r.find('</a>'):]
+        dict_of_quality.update({quality: url})
+    return dict_of_quality
+
+
+def game(title):
+    s = requests.Session()
+    data = {'do': 'search',
+            'subaction': 'search',
+            'search_start': '1',  # для некст стр + 1
+            'full_search': '0',
+            'result_from': '1',  # для некст стр + 15
+            'story': title,
+            }
+
+    r = s.post('http://gmt-max.net/index.php?do=search', data=data).text
+    dict_of_games = {}
+    while r.find('<div class="short_news_title_center">') != -1:
+        r = r[r.find('<div class="short_news_title_center">') + 46:]
+        url = r[: r.find('"')]
+        title = r[r.find('>') + 1: r.find('<')]
+        r = r[r.find('</div>'):]
+        dict_of_games.update({title: url})
+    return dict_of_games
+
+
+def download_game(game):
+    s = requests.Session()
+    r = s.get(game).text
+    r = r[r.find('<div class="title">') + 19:]
+    return 'http://gmt-max.net' + r[r.find('"') + 1: r.find('>') - 1]
+
