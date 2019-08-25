@@ -11,7 +11,7 @@ from telebot import types
 from pyaspeller import YandexSpeller
 
 
-TOKEN = '914271777:AAEJol6pCnAyLRQbAEeRz0cOPzZtgeDrero'
+TOKEN = '914271777:AAFo2xG5aRCCBjABd3x467be_QazQzHKwr0'
 bot = telebot.TeleBot(TOKEN)
 adminid = 704369002
 lshelp = ['help',
@@ -159,6 +159,7 @@ def callback_for_buttons(object_):
         dict_of_quality = show.choice_quality(object_.data)
         for i in dict_of_quality.items():
             markup.add(types.InlineKeyboardButton(text=i[0], callback_data=i[1]))
+        print('Качество фильма:')
         bot.send_message(chat_id, 'Выберите качество фильма :', reply_markup=markup)
     elif object_.data.find('gmt-max.net') != -1:
         msg = bot.forward_message(chat_id, chat_id, object_.message.message_id - 1)
