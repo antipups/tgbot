@@ -245,4 +245,4 @@ def check_light():
 
     status = r[r.find(':') + 2: r.find(',') - 1]
     value = r[r.find('"sum":"') + 7: r.find('","ac')]
-    return status + value
+    return status + ' ' + value
