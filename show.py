@@ -1,6 +1,7 @@
 from urllib import request
 import time
 import requests
+from idna import unicode
 
 
 def kurs(code):
@@ -208,3 +209,40 @@ def download_game(game):
     r = r[r.find('<div class="title">') + 19:]
     return 'http://gmt-max.net' + r[r.find('"') + 1: r.find('>') - 1]
 
+
+def check_light():
+    s = requests.Session()
+    r = s.get('https://dom.jch-online.com/ru').text
+    r = r[r.find('<meta name="csrf-token" content="') + 33:]
+    aut_token = r[: r.find('"')]
+    data = {
+        'utf8': '✓',
+        'authenticity_token': aut_token,
+        'username': 'xgoodlikex',
+        'password': 'Nek0507677684',
+    }
+
+    s.post('https://dom.jch-online.com/ru/login', data=data)
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                      'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
+        'Cookie': '_jchbyt_session_v27=88e239f6df19e1abb7c8dea93766133f',
+
+    }
+
+    r = s.get('https://dom.jch-online.com/ru/accounts', headers=headers).text
+    r = r[r.find('<meta name="csrf-token" content="') + 33:]
+    xcsrf_token = r[: r.find('"')]
+    r = r[r.find('<li class="account selected" data-param="') + 41:]
+    access = r[: r.find('"')]
+
+    headers.update({'X-CSRF-Token': xcsrf_token,
+                    'X-ACCESS-TOKEN': access})
+
+    r = s.post('https://dom.jch-online.com/ru/accounts/643486/saldo.json', headers=headers)
+    r = unicode(r.content, 'utf-8')
+
+    status = r[r.find(':') + 2: r.find(',') - 1]
+    value = r[r.find('"sum":"') + 7: r.find('","ac')]
+    return status + value

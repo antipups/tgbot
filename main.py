@@ -215,6 +215,9 @@ def test(message):
             checkfilm(message)
         elif text.find('игру') != -1:
             checkgame(message)
+    elif text.find('свет') != -1:
+        if userid == adminid:
+            bot.send_message(userid, show.check_light())
 
 
 print("I'm Work!")
