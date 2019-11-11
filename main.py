@@ -149,8 +149,11 @@ def maingame(message):
 def callback_for_buttons(object_):
     namefile = 'Нажми_на_меня.torrent'
     chat_id = object_.from_user.id
+    print(object_.data)
     if object_.data.find('/torrents/') != -1:  # скачивание фильмов
-        request.urlretrieve(object_.data, namefile)
+        # request.urlretrieve(object_.data, namefile)
+        with open(namefile, 'wb') as f:
+            f.write(requests.get(object_.data).content)
         with open(namefile, 'rb') as f:
             bot.send_document(chat_id, f)
         os.remove(namefile)
