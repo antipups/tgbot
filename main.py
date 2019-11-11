@@ -11,7 +11,7 @@ from telebot import types
 from pyaspeller import YandexSpeller
 
 
-TOKEN = '914271777:AAFo2xG5aRCCBjABd3x467be_QazQzHKwr0'
+TOKEN = '889368628:AAHK1YT19iUnNjHKxQLk2brI7Azc3RDk-CU'
 bot = telebot.TeleBot(TOKEN)
 adminid = 704369002
 lshelp = ['help',
